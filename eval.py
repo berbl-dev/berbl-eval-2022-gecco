@@ -18,6 +18,15 @@ metrics = {"p_M_D": True, "mae": False, "size": False}
 ropes = {"p_M_D": 10, "mae": 0.01, "size": 0.5}
 
 
+# Not entirely sure whether this generalizes properly but it seems to work so
+# far.
+def fix_artifact_uri(uri, path):
+    path = path.removesuffix("/")
+    dir = path.split("/")[-1]
+    uri = uri.split(dir)[-1]
+    return f"{path}/{uri}"
+
+
 def table_compare_drugowitsch(runs):
     print()
     print("# Comparison with Drugowitsch's results (p(M | D) and size)")
@@ -147,8 +156,9 @@ def plot_median_predictions(runs, path, graphs):
 
         print(f"Plotting median run for {'.'.join(exp_name)} …")
         prediction_plots |= {exp_name: r}
-        # TODO Ugly that we hardcode "mlruns/" here
-        fixed_art_uri = f"{path}/{r['artifact_uri'].removeprefix('mlruns/')}"
+
+        fixed_art_uri = fix_artifact_uri(r["artifact_uri"], path)
+
         rdata = get_data(fixed_art_uri)
 
         fig, ax = plt.subplots()
@@ -245,9 +255,13 @@ def table_stat_tests_berbl_xcsf(runs):
     table_rounded = table.copy()
     for variant, statistic in table.keys():
         if statistic == "std":
-            table_rounded[(variant, statistic)] = table_rounded[(variant, statistic)].round(2)
+            table_rounded[(variant,
+                           statistic)] = table_rounded[(variant,
+                                                        statistic)].round(2)
         else:
-            table_rounded[(variant, statistic)] = table_rounded[(variant, statistic)].round(4)
+            table_rounded[(variant,
+                           statistic)] = table_rounded[(variant,
+                                                        statistic)].round(4)
 
     print(table_rounded.to_latex())
     print()
@@ -292,7 +306,7 @@ def plot_extra_xcsf_prediction(runs, path, graphs):
     r = rs_xcsf[rs_xcsf[metric] == rs_xcsf[metric].quantile(
         interpolation="higher")].iloc[0]
     rid = r["run_id"]
-    fixed_art_uri = f"{path}/{r['artifact_uri'].removeprefix('mlruns/')}"
+    fixed_art_uri = fix_artifact_uri(r["artifact_uri"], path)
     rdata = get_data(fixed_art_uri)
 
     fig, ax = plt.subplots()
@@ -325,8 +339,7 @@ def plot_berbl_pred_dist(runs, path, graphs):
         f"Plotting point distribution at y={place} of median p(M | D) run for "
         f"{exp_name}")
     rid = r["run_id"]
-    # TODO Ugly that we hardcode "mlruns/" here
-    fixed_art_uri = f"{path}/{r['artifact_uri'].removeprefix('mlruns/')}"
+    fixed_art_uri = fix_artifact_uri(r["artifact_uri"], path)
     rdata = get_data(fixed_art_uri)
     mean = rdata["y_points_mean"].loc[index][0]
     std = rdata["y_points_std"].loc[index][0]
@@ -404,7 +417,8 @@ xcsf_experiments = [
               show_default=True)
 def main(path, graphs, commit):
     """
-    Analyse the parameter search results found at PATH.
+    Analyse the parameter search results found at PATH (PATH is expected to be
+    an mlflow tracking URI, e.g. an mlruns folder).
     """
     mlflow.set_tracking_uri(path)
 
