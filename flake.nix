@@ -11,14 +11,17 @@
   };
 
   outputs = { self, nixpkgs, berbl-eval }:
-    with import nixpkgs { system = "x86_64-linux"; };
+
+    let system = "x86_64-linux";
+    in with import nixpkgs { inherit system; };
+
     let python = python39;
     in rec {
 
-      devShell.x86_64-linux = mkShell {
+      devShell."${system}" = mkShell {
         packages = [
           (python.withPackages
-            (ps: [ berbl-eval.defaultPackage.x86_64-linux ps.networkx ]))
+            (ps: [ berbl-eval.defaultPackage."${system}" ps.networkx ]))
         ];
       };
     };
