@@ -27,7 +27,7 @@
         "pystan": "pystan"
       },
       "locked": {
-        "narHash": "sha256-hM9sH8RqNuPuPc0E3dNtl/VizPJhnNFNCRXorAKMAT8=",
+        "narHash": "sha256-daf4PS76j3LRrW53Rwnpxs86W+tmp3JxjhGeUkqLWXY=",
         "path": "/home/david/Projekte/berbl/berbl-eval",
         "type": "path"
       },
