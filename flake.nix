@@ -22,6 +22,7 @@
         packages = [
           (python.withPackages
             (ps: [ berbl-eval.defaultPackage."${system}" ps.networkx ]))
+          berbl-eval.packages.fetser."${system}"
         ];
       };
     };
