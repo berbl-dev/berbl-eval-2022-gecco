@@ -39,20 +39,13 @@ def main(path, graphs):
 
     experiment_names = [f"xcsf.{exp}" for exp in xcsf_experiments]
 
-    # Only consider runs that ran from these commits.
-    shas = [
-        "29963ee41bfd5d55e855788f801f4e28205ac558"
-    ]
-
     for exp_name in experiment_names:
         print()
         print(f"# Analysis of the results of experiment {exp_name}")
         print()
-        commit = shas[0]
         expid = exp_id(exp_name)
         print("Loading runs from mlflow, may take a few seconds …")
         rs = mlflow.search_runs(expid,
-                                f"tags.mlflow.source.git.commit = '{commit}'",
                                 max_results=10000,
                                 output_format="pandas")
 
