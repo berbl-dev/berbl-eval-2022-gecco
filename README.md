@@ -1,20 +1,37 @@
-# Evaluation scripts for the paper _BERBL: An implementation of a fully Bayesian Learning Classifier System_
+# Running the evaluation
 
 
-1. Install the [Nix package manager](https://nixos.org/download.html).
-2. Enable flakes support: Add the following line to `~/.config/nix/nix.conf`:
-   ```
-   experimental-features = nix-command flakes
-   ```
-3. Run
+This assumes that the corresponding experiments have been run and their results
+stored in `path/to/results/mlruns`. See the `berbl-exp-2022-evostar` repository.
+
+
+1. Install
+   [Nix](https://nixos.org/manual/nix/stable/installation/installing-binary.html)
+   [including flakes support](https://nixos.wiki/wiki/Flakes) in order to be
+   able to run `nix develop` later.  Note that [Nix does not yet support
+   Windows](https://nixos.org/manual/nix/stable/installation/supported-platforms.html).
+2. Clone the repository (`git clone …`). Run the next steps from within the
+   cloned repository.
+3. Enter a shell that contains all dependencies by running
    ```bash
    nix develop
    ```
-   This drops you into a shell that has all the necessary dependencies installed
-   (be patient, this may take some time when run for the first time).
-4. In the development shell, run
-   1. `python eval-ps.py path/to/data/mlruns` to evaluate the XCSF paramater
-      search data found at `path/to/data/mlruns`.
-   2. `python eval.py path/to/data/mlruns` to evaluate the experiment data at
-      `path/to/data/mlruns` (i.e. comparison of BERBL with XCSF etc.).
-5. Some evaluation data is printed to `stdout`, some is stored in `eval`.
+   (may take some time to complete).
+4. Run the evaluation, pointing it to the `mlruns` directory containing the
+   experiment results.
+   ```bash
+   python eval.py path/to/results/mlruns
+   ```
+5. Run the evaluation of the parameter study, pointing it to the `mlruns-ps`
+   directory containing the experiment results.
+   ```bash
+   python eval.py path/to/results/mlruns-ps
+   ```
+
+
+Note: Some evaluation data is printed to `stdout`, some is stored in `eval`.
+
+
+<!-- Local Variables: -->
+<!-- mode: markdown -->
+<!-- End: -->
