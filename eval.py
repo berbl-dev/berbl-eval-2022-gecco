@@ -131,6 +131,9 @@ def table_compare_drugowitsch(runs):
         level=0)
 
     table = table.round(2)
+    # Slim table, only keep modular numbers since modular and literal are
+    # equivalent.
+    table = table[list(filter(lambda x: x[0] == "non_literal", table.columns))]
 
     dga = drugowitsch_ga.stack()
     dga.index = dga.index.swaplevel(0, 1)
@@ -284,6 +287,7 @@ def table_stat_tests_berbl_xcsf(runs):
                            statistic)] = table_rounded[(variant,
                                                         statistic)].round(4)
 
+    table_rounded = table_rounded[["modular", "xcsf"]]
     print(table_rounded.to_latex())
     print()
 
