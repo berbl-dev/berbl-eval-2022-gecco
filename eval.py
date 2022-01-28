@@ -18,6 +18,9 @@ metrics = {"p_M_D": True, "mae": False, "size": False}
 ropes = {"p_M_D": 10, "mae": 0.01, "size": 0.5}
 
 
+reps = 30
+
+
 # Not entirely sure whether this generalizes properly but it seems to work so
 # far.
 def fix_artifact_uri(uri, path):
@@ -78,7 +81,7 @@ def table_compare_drugowitsch(runs):
     # Second level of index is variant.
     rs = rs.loc[["book", "non_literal"]]
 
-    assert len(rs) == 10 * 5 * (4 + 4)
+    assert len(rs) == reps * 5 * (4 + 4)
 
     rs = rs.rename(lambda s: s.removeprefix("metrics.elitist."), axis=1)
 
@@ -128,7 +131,7 @@ def table_compare_drugowitsch(runs):
 def median_run(runs, metric, algorithm, variant, task):
     rs = runs.loc[(algorithm, variant, task)]
 
-    assert len(rs) == 10 * 5, len(rs)
+    assert len(rs) == reps * 5, len(rs)
     r = rs[rs[metric] == rs[metric].quantile(interpolation="higher")].iloc[0]
     return r
 
@@ -187,7 +190,7 @@ def stat_tests_lit_mod(runs):
     # Second level of index is variant.
     rs = rs.loc[["book", "non_literal"]]
 
-    assert len(rs) == 10 * 5 * (4 + 4)
+    assert len(rs) == reps * 5 * (4 + 4)
 
     rs = rs.rename(lambda s: s.removeprefix("metrics.elitist."), axis=1)
 
@@ -442,8 +445,8 @@ def main(path, graphs, commit):
          + 4)
         # 5 data seeds per experiment.
         * 5
-        # 10 runs.
-        * 10)
+        # reps runs.
+        * reps)
     assert len(
         runs) == n_runs, f"Expected {n_runs} runs but there were {len(runs)}"
 
