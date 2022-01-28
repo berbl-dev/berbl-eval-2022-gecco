@@ -85,6 +85,24 @@ def table_compare_drugowitsch(runs):
 
     rs = rs.rename(lambda s: s.removeprefix("metrics.elitist."), axis=1)
 
+    print("Checking literal and modular backends for being equal …")
+
+    books = rs.loc["book"]
+    books = books.set_index(["params.data.seed", "params.seed"], append=True)
+    books = books.reset_index(level=1, drop=True)
+    books = books.sort_index()
+    non_literals = rs.loc["non_literal"]
+    non_literals = non_literals.set_index(["params.data.seed", "params.seed"], append=True)
+    non_literals = non_literals.reset_index(level=1, drop=True)
+    non_literals = non_literals.sort_index()
+
+    mae = np.abs(non_literals.p_M_D - books.p_M_D).sum() / len(books)
+    frac_neq = (books.p_M_D != non_literals.p_M_D).sum() / len(books)
+    print(f"p(M | D) MAE of literal and modular backends is {mae}.")
+    print(f"Fraction of not-exactly-equal p(M | D) results of literal and modular backends is {frac_neq}.")
+    frac_neq_higher = (books.p_M_D <= non_literals.p_M_D).sum() / len(books)
+    print(f"Fraction of higher p(M | D) results of literal and modular backends is {frac_neq_higher}.")
+
     metrics = ["p_M_D", "size"]
     groups = rs.groupby(level=["variant", "task"])[metrics]
 
