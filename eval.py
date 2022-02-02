@@ -32,43 +32,43 @@ def fix_artifact_uri(uri, path):
 
 def table_compare_drugowitsch(runs):
     print()
-    print("# Comparison with Drugowitsch's results (p(M | D) and size)")
+    print("# Comparison with Drugowitsch's results (ln p(M | D) and size)")
     print()
 
     # These are Drugowitsch's results on these tasks (taken from his book).
     drugowitsch_ga = pd.DataFrame({
         "generated_function": {
-            "$p(\MM \mid \DD)$": 118.81,
+            "$\ln p(\MM \mid \DD)$": 118.81,
             "$K$": 2
         },
         "sparse_noisy_data": {
-            "$p(\MM \mid \DD)$": -159.07,
+            "$\ln p(\MM \mid \DD)$": -159.07,
             "$K$": 2
         },
         "variable_noise": {
-            "$p(\MM \mid \DD)$": -63.12,
+            "$\ln p(\MM \mid \DD)$": -63.12,
             "$K$": 2
         },
         "sine": {
-            "$p(\MM \mid \DD)$": -155.68,
+            "$\ln p(\MM \mid \DD)$": -155.68,
             "$K$": 7
         },
     })
     drugowitsch_mcmc = pd.DataFrame({
         "generated_function": {
-            "$p(\MM \mid \DD)$": 174.50,
+            "$\ln p(\MM \mid \DD)$": 174.50,
             "$K$": 3
         },
         "sparse_noisy_data": {
-            "$p(\MM \mid \DD)$": -158.55,
+            "$\ln p(\MM \mid \DD)$": -158.55,
             "$K$": 2
         },
         "variable_noise": {
-            "$p(\MM \mid \DD)$": -58.59,
+            "$\ln p(\MM \mid \DD)$": -58.59,
             "$K$": 2
         },
         "sine": {
-            "$p(\MM \mid \DD)$": -29.39,
+            "$\ln p(\MM \mid \DD)$": -29.39,
             "$K$": 5
         },
     })
@@ -98,10 +98,10 @@ def table_compare_drugowitsch(runs):
 
     mae = np.abs(non_literals.p_M_D - books.p_M_D).sum() / len(books)
     frac_neq = (books.p_M_D != non_literals.p_M_D).sum() / len(books)
-    print(f"p(M | D) MAE of literal and modular backends is {mae}.")
-    print(f"Fraction of not-exactly-equal p(M | D) results of literal and modular backends is {frac_neq}.")
+    print(f"ln p(M | D) MAE of literal and modular backends is {mae}.")
+    print(f"Fraction of not-exactly-equal ln p(M | D) results of literal and modular backends is {frac_neq}.")
     frac_neq_higher = (books.p_M_D <= non_literals.p_M_D).sum() / len(books)
-    print(f"Fraction of higher p(M | D) results of literal and modular backends is {frac_neq_higher}.")
+    print(f"Fraction of higher ln p(M | D) results of literal and modular backends is {frac_neq_higher}.")
 
     metrics = ["p_M_D", "size"]
     groups = rs.groupby(level=["variant", "task"])[metrics]
@@ -121,7 +121,7 @@ def table_compare_drugowitsch(runs):
     table.index = table.index.rename(["task", "metric"])
     table = table.reset_index()
     table["metric"] = table["metric"].apply(
-        lambda s: "$K$" if s == "size" else "$p(\MM \mid \DD)$")
+        lambda s: "$K$" if s == "size" else "$\ln p(\MM \mid \DD)$")
     table.index = pd.MultiIndex.from_arrays([table["task"], table["metric"]])
     del table["task"]
     del table["metric"]
@@ -160,7 +160,7 @@ def median_run(runs, metric, algorithm, variant, task):
 def plot_median_predictions(runs, path, graphs):
     print()
     print(
-        "## Plotting median p(M | D) (or MAE) run for all algorithms and each "
+        "## Plotting median ln p(M | D) (or MAE) run for all algorithms and each "
         "task to compare plots")
     print()
 
@@ -288,6 +288,7 @@ def table_stat_tests_berbl_xcsf(runs):
                                                         statistic)].round(4)
 
     table_rounded = table_rounded[["modular", "xcsf"]]
+
     print(table_rounded.to_latex())
     print()
 
@@ -361,7 +362,7 @@ def plot_berbl_pred_dist(runs, path, graphs):
     place = 0.25
     index = 4
     print(
-        f"Plotting point distribution at y={place} of median p(M | D) run for "
+        f"Plotting point distribution at y={place} of median ln p(M | D) run for "
         f"{exp_name}")
     rid = r["run_id"]
     fixed_art_uri = fix_artifact_uri(r["artifact_uri"], path)
@@ -395,7 +396,7 @@ def plot_berbl_pred_dist(runs, path, graphs):
               color="C0")
 
     ax.set_xlabel("Output y")
-    ax.set_ylabel(f"p(y | x = {place})")
+    ax.set_ylabel(f"ln p(y | x = {place})")
     save_plot(exp_name, f"dist-{place}", fig)
 
     if graphs:
