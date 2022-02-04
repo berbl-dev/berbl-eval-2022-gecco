@@ -17,8 +17,7 @@ pd.options.display.max_rows = 2000
 metrics = {"p_M_D": True, "mae": False, "size": False}
 ropes = {"p_M_D": 10, "mae": 0.01, "size": 0.5}
 
-
-reps = 30
+reps = 10
 
 
 # Not entirely sure whether this generalizes properly but it seems to work so
@@ -92,16 +91,22 @@ def table_compare_drugowitsch(runs):
     books = books.reset_index(level=1, drop=True)
     books = books.sort_index()
     non_literals = rs.loc["non_literal"]
-    non_literals = non_literals.set_index(["params.data.seed", "params.seed"], append=True)
+    non_literals = non_literals.set_index(["params.data.seed", "params.seed"],
+                                          append=True)
     non_literals = non_literals.reset_index(level=1, drop=True)
     non_literals = non_literals.sort_index()
 
+    print(f"Comparing {len(books)} literal with {len(non_literals)} runs.")
     mae = np.abs(non_literals.p_M_D - books.p_M_D).sum() / len(books)
     frac_neq = (books.p_M_D != non_literals.p_M_D).sum() / len(books)
     print(f"ln p(M | D) MAE of literal and modular backends is {mae}.")
-    print(f"Fraction of not-exactly-equal ln p(M | D) results of literal and modular backends is {frac_neq}.")
+    print(
+        f"Fraction of not-exactly-equal ln p(M | D) results of literal and modular backends is {frac_neq}."
+    )
     frac_neq_higher = (books.p_M_D <= non_literals.p_M_D).sum() / len(books)
-    print(f"Fraction of higher ln p(M | D) results of literal and modular backends is {frac_neq_higher}.")
+    print(
+        f"Fraction of higher ln p(M | D) results of literal and modular backends is {frac_neq_higher}."
+    )
 
     metrics = ["p_M_D", "size"]
     groups = rs.groupby(level=["variant", "task"])[metrics]
@@ -148,6 +153,31 @@ def table_compare_drugowitsch(runs):
     print(table.to_latex(escape=False))
     print()
 
+    print("Comparing impact of different data seeds (only non-literal)")
+
+    rs = rs.set_index("params.data.seed", append=True)
+    groups = rs.groupby(level=["variant", "task", "params.data.seed"])[metrics]
+    means = groups.mean()
+    means = pd.DataFrame(means.stack()).rename(columns={0: "mean"})
+    medians = groups.median()
+    medians = pd.DataFrame(medians.stack()).rename(columns={0: "median"})
+    maxs = groups.max()
+    maxs = pd.DataFrame(maxs.stack()).rename(columns={0: "max"})
+
+    means = means.unstack(2).loc["non_literal"]
+
+    print(means)
+
+    print("Std of means across data sets")
+    print(means.std(axis=1))
+
+    medians = medians.unstack(2).loc["non_literal"]
+
+    print(medians)
+
+    print("Std of medians across data sets")
+    print(medians.std(axis=1))
+
 
 def median_run(runs, metric, algorithm, variant, task):
     rs = runs.loc[(algorithm, variant, task)]
@@ -175,6 +205,14 @@ def plot_median_predictions(runs, path, graphs):
         else:
             metric = "metrics.elitist.p_M_D"
             rs = keep_unstandardized(runs)
+
+        # TODO Not that nice, this. Maybe plot median of standardized runs by
+        # themselves, too?
+        # Since we have some experiments that were only standardized runs, we
+        # have to shortcut here sometimes.
+        if (exp_name == ('berbl', 'standardized', 'generated_function')
+            or exp_name == ('berbl', 'standardized', 'sparse_noisy_data')):
+            continue
 
         r = median_run(rs, metric, algorithm, variant, task)
 
@@ -239,8 +277,11 @@ def table_stat_tests_berbl_xcsf(runs):
     rs_interval = keep_unstandardized(rs_interval)
 
     rs_book = runs.loc[("berbl", "book")]
-    assert len(rs_interval) == len(rs_book), (
-        "There are params.matching==softint runs lacking for some experiments")
+    rs_book = keep_unstandardized(rs_book)
+
+    assert len(rs_interval) == 2 * len(rs_book), (
+        "There are params.matching==softint runs lacking for some "
+        f"experiments ({len(rs_interval)} != {2 * len(rs_book)})")
 
     rs_lit = rs_interval[rs_interval["params.literal"] == "True"]
     rs_mod = rs_interval[rs_interval["params.literal"] == "False"]
@@ -313,7 +354,7 @@ def table_stat_tests_berbl_xcsf(runs):
         print()
 
 
-def plot_extra_xcsf_prediction(runs, path, graphs):
+def plot_extra_xcsf_prediction(runs, path, task, graphs):
     print()
     print("## Plotting XCSF prediction (median run re MAE) on data seed of "
           "BERBL median run")
@@ -321,11 +362,11 @@ def plot_extra_xcsf_prediction(runs, path, graphs):
 
     data_seed = median_run(keep_unstandardized(runs), "metrics.elitist.p_M_D",
                            "berbl", "non_literal",
-                           "generated_function")["params.data.seed"]
+                           task)["params.data.seed"]
 
-    exp_name = "xcsf.book.generated_function"
+    exp_name = f"xcsf.book.{task}"
 
-    rs_xcsf = runs.loc[("xcsf", "book", "generated_function")]
+    rs_xcsf = runs.loc[("xcsf", "book", task)]
     rs_xcsf = rs_xcsf[rs_xcsf["params.data.seed"] == data_seed]
     metric = "metrics.mae"
     # TODO Ugly that we hardcode "mlruns/" here
@@ -340,7 +381,7 @@ def plot_extra_xcsf_prediction(runs, path, graphs):
     plot_prediction(ax, fixed_art_uri)
     ax.set_xlabel("Input x")
     ax.set_ylabel("Output y")
-    save_plot(exp_name, "pred-same-data-berbl", fig)
+    save_plot(exp_name, f"pred-same-data-berbl", fig)
 
     if graphs:
         plt.show()
@@ -348,14 +389,14 @@ def plot_extra_xcsf_prediction(runs, path, graphs):
         plt.close("all")
 
 
-def plot_berbl_pred_dist(runs, path, graphs):
+def plot_berbl_pred_dist(runs, path, task, graphs):
     print()
     print("## Plotting BERBL predictive distribution")
     print()
 
-    exp_name = "berbl.non_literal.generated_function"
+    exp_name = f"berbl.non_literal.{task}"
     r = median_run(keep_unstandardized(runs), "metrics.elitist.p_M_D", "berbl",
-                   "non_literal", "generated_function")
+                   "non_literal", task)
 
     # index 4 corresponds to p(y | x = 0.25), see
     # experiments.berbl.BERBLExperiment.evaluate.
@@ -451,21 +492,29 @@ def main(path, graphs, commit):
     berbl_experiment_names = [
         f"berbl.{exp_name}" for exp_name in berbl_experiments
     ]
+    berbl_experiments_standardized_names = [
+        "berbl.standardized.generated_function",
+        "berbl.standardized.sparse_noisy_data",
+    ]
     xcsf_experiment_names = [
         f"xcsf.{exp_name}" for exp_name in xcsf_experiments
     ]
-    exp_names = berbl_experiment_names + xcsf_experiment_names
+    exp_names = (berbl_experiment_names + berbl_experiments_standardized_names
+                 + xcsf_experiment_names)
 
+    # runs = read_mlflow(exp_names, commit=commit, check_finished=False)
     runs = read_mlflow(exp_names, commit=commit)
 
+    print(runs.groupby(level=["algorithm", "variant", "task"]).agg(len))
     n_runs = (
         # BERBL experiments (4 from book, 4 from book with modular backend, 2
         # additional each with interval-based matching).
-        (((4 + 4 + 2 + 2)
-          # BERBL experiments were performed twice, w/ and w/o standardization.
-          * 2)
-         # XCSF experiments.
-         + 4)
+        (
+            4 + 4 + 2 + 2
+            # BERBL experiments with standardization.
+            + 4
+            # XCSF experiments.
+            + 4)
         # 5 data seeds per experiment.
         * 5
         # reps runs.
@@ -481,9 +530,15 @@ def main(path, graphs, commit):
 
     table_stat_tests_berbl_xcsf(runs)
 
-    plot_extra_xcsf_prediction(runs, path, graphs)
+    plot_extra_xcsf_prediction(runs, path, "generated_function", graphs)
+    plot_extra_xcsf_prediction(runs, path, "sparse_noisy_data", graphs)
+    plot_extra_xcsf_prediction(runs, path, "variable_noise", graphs)
+    plot_extra_xcsf_prediction(runs, path, "sine", graphs)
 
-    plot_berbl_pred_dist(runs, path, graphs)
+    plot_berbl_pred_dist(runs, path, "generated_function", graphs)
+    plot_berbl_pred_dist(runs, path, "sparse_noisy_data", graphs)
+    plot_berbl_pred_dist(runs, path, "variable_noise", graphs)
+    plot_berbl_pred_dist(runs, path, "sine", graphs)
 
     # TODO Perform statistical tests on standardized data, too
 
