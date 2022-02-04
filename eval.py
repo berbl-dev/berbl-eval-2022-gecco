@@ -11,6 +11,10 @@ warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 # TODO Store via PGF backend with nicer LaTeXy fonts etc.
 # https://jwalton.info/Matplotlib-latex-PGF/
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 pd.options.display.max_rows = 2000
 
 # Metric and whether higher is better.
