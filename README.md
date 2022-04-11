@@ -1,8 +1,9 @@
-# Running the evaluation
+# Analysis of the runs conducted for the 2022 GECCO paper
 
 
 This assumes that the corresponding experiments have been run and their results
-stored in `path/to/results/mlruns`. See the `berbl-exp-2022-evostar` repository.
+stored in `path/to/results/mlruns`. See the [the berbl-exp-2022-gecco
+repository](https://github.com/berbl-dev/berbl-exp-2022-gecco).
 
 
 1. Install
