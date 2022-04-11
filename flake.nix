@@ -4,11 +4,8 @@
   # 2022-01-24
   inputs.nixpkgs.url =
     "github:NixOS/nixpkgs/8ca77a63599ed951d6a2d244c1d62092776a3fe1";
-  # inputs.berbl-eval.url = "TODO"
-  inputs.berbl-eval = {
-    type = "path";
-    path = "/home/david/Projekte/berbl/berbl-eval";
-  };
+
+  inputs.berbl-eval.url = "github:berbl-dev/berbl-eval";
 
   outputs = { self, nixpkgs, berbl-eval }:
 

@@ -27,13 +27,17 @@
         "pystan": "pystan"
       },
       "locked": {
-        "narHash": "sha256-+TBt++QkfHTqW9qdU6Yn6+9up6sH4NmvTw2KH0EKKPM=",
-        "path": "/home/david/Projekte/berbl/berbl-eval",
-        "type": "path"
+        "lastModified": 1649684253,
+        "narHash": "sha256-aii6moeCBpVrYKGVDlkWau2H2meEIgVhUZbFRFAM0KM=",
+        "owner": "berbl-dev",
+        "repo": "berbl-eval",
+        "rev": "38437d8c8aa68f4eae225dd1eddea59ccf854210",
+        "type": "github"
       },
       "original": {
-        "path": "/home/david/Projekte/berbl/berbl-eval",
-        "type": "path"
+        "owner": "berbl-dev",
+        "repo": "berbl-eval",
+        "type": "github"
       }
     },
     "nixpkgs": {
