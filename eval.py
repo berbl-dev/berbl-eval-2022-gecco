@@ -290,8 +290,8 @@ def table_stat_tests_berbl_xcsf(runs):
     rs_lit = rs_interval[rs_interval["params.literal"] == "True"]
     rs_mod = rs_interval[rs_interval["params.literal"] == "False"]
     assert len(rs_lit) == len(rs_mod), ("Different number of runs for "
-                                        "interval-based literal and "
-                                        "modular")
+                                        f"interval-based literal ({len(rs_lit)}) and "
+                                        f"modular ({len(rs_mod)})")
 
     groups_lit = rs_lit.sort_values("task").groupby(
         "task")[f"metrics.elitist.{metric}"]
