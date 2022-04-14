@@ -18,7 +18,7 @@
       devShell."${system}" = mkShell {
         packages = [
           (python.withPackages
-            (ps: [ berbl-eval.defaultPackage."${system}" ps.networkx ]))
+            (ps: [ berbl-eval.defaultPackage."${system}" ps.networkx ps.ipython ]))
           berbl-eval.packages.fetser."${system}"
         ];
       };
